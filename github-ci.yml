@@ -1,24 +1,28 @@
-image: python:rc-alpine
+name: Pylint
 
-stages:
-  - build
-  - test
+on: [pull_request]
 
-build-code-job:
-  stage: build
-  script:
-    - echo "Check the ruby version, then build some Ruby project files:"
-    - ruby -v
-    - rake
 
-test-code-job1:
-  stage: test
-  script:
-    - echo "If the files are built successfully, test some files with one command:"
-    - rake test1
+jobs:
+  build:
 
-test-code-job2:
-  stage: test
-  script:
-    - echo "If the files are built successfully, test other files with a different command:"
-    - rake test2
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: codecov/codecov-action@v1
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint
+        pip install flake8_docstrings
+    - name: Analysing the code with pylint
+      run: |
+        pylint `ls -R|grep .py$|xargs` --disable=missing-docstring
+    - name: Run tests
+      run: |
+        python test.py 
